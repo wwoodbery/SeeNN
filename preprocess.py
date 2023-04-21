@@ -12,6 +12,10 @@ HR_DIM = P_CROP_DIM - C_CROP_SIZE
 DSCALE_FACTOR = 4
 LR_DIM = HR_DIM // DSCALE_FACTOR
 
+def get_hr_shape():
+    x = P_CROP_DIM - C_CROP_SIZE
+    return (x, x, 3)
+
 def crop_center(img):
     start = P_CROP_DIM//2-(HR_DIM//2)
     return img[start:start+HR_DIM,start:start+HR_DIM]
@@ -47,6 +51,9 @@ def get_data_from_file(file_path):
         lr_hr_tuples = pickle.load(f)
         f.close()
     return lr_hr_tuples
+
+def tuples_to_arrays(lr_hr_tuples):
+    return np.array(lr_hr_tuples)
 
 lr_hr_tuples = generate_lr_hr_list('images/*jpg')
 # generate_data_file(lr_hr_tuples)
