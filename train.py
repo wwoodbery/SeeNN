@@ -8,9 +8,12 @@ from generator import Generator
 from discriminator import Discriminator
 import preprocess
 import pickle
+import time
+
 
 image_shape = preprocess.get_hr_shape()
 
+start = time.time()
 file = open('lr_hr_image_data.pkl','rb')
 data = pickle.load(file)
 
@@ -24,7 +27,8 @@ for indice in indices:
   lr_images.append(data[indice][0])
   hr_images.append(data[indice][1])
 
-
+end = time.time()
+print(end-start)
 
 
 def vgg_loss(y_true, y_pred):
@@ -62,8 +66,8 @@ def train(epochs=1, batch_size=125):
 
     gan = get_gan_network(discriminator, shape, generator, adam)
 
-    lr_images_batches = tf.split(lr_images, len(lr_images)/batch_size)
-    hr_images_batches = tf.split(hr_images, len(lr_images)/batch_size)
+    lr_images_batches = tf.split(lr_images, int(len(lr_images)/batch_size))
+    hr_images_batches = tf.split(hr_images, int(len(lr_images)/batch_size))
 
     for e in range(1, epochs+1):
         print ('-'*15, 'Epoch %d' % e, '-'*15)
@@ -99,5 +103,3 @@ def train(epochs=1, batch_size=125):
             gan.save('./output/gan_model%d.h5' % e)
 
 train(4, 125)
-
-            
