@@ -7,14 +7,24 @@ from keras.layers import Input
 from generator import Generator
 from discriminator import Discriminator
 import preprocess
+import pickle
 
 image_shape = preprocess.get_hr_shape()
 
-pickle_file_path = 'lr_hr_image_data.pkl'
+file = open('lr_hr_image_data.pkl','rb')
+data = pickle.load(file)
 
-lr_hr_array = np.array(tf.random.shuffle(preprocess.get_data_from_file(pickle_file_path)))
-lr_images = lr_hr_array[:,0] #1000 lr images
-hr_images = lr_hr_array[:,1] #1000 hr images, corresponding indices to lr_images
+lr_images = []
+hr_images = []
+
+indices = np.arange(len(data))
+np.random.shuffle(indices)
+
+for indice in indices:
+  lr_images.append(data[indice][0])
+  hr_images.append(data[indice][1])
+
+
 
 
 def vgg_loss(y_true, y_pred):
@@ -52,8 +62,8 @@ def train(epochs=1, batch_size=125):
 
     gan = get_gan_network(discriminator, shape, generator, adam)
 
-    lr_images_batches = tf.split(lr_images, batch_size)
-    hr_images_batches = tf.split(hr_images, batch_size)
+    lr_images_batches = tf.split(lr_images, len(lr_images)/batch_size)
+    hr_images_batches = tf.split(hr_images, len(lr_images)/batch_size)
 
     for e in range(1, epochs+1):
         print ('-'*15, 'Epoch %d' % e, '-'*15)

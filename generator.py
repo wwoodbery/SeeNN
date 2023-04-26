@@ -1,6 +1,6 @@
 import tensorflow as tf
 from keras.layers import Dense
-from keras.layers.normalization import BatchNormalization
+from keras.layers import BatchNormalization
 from keras.layers.convolutional import Conv2D
 from keras.layers import PReLU, LeakyReLU
 from keras.layers import Input
@@ -20,6 +20,8 @@ def residual_block(inputs, kernel_size, filters, strides):
     
     inputs = add([og_inputs, inputs])
 
+    return inputs
+
 def upsampling_block(inputs, kernel_size, filters, strides):
     inputs = Conv2D(filters = filters, kernel_size = kernel_size, strides = strides, padding = "same")(inputs)
     inputs = UpSampling2D(size = 2)(inputs)
@@ -32,7 +34,7 @@ class Generator(object):
     def __init__(self, input_shape):
         self.input_shape = input_shape
 
-    def generator(self, input):
+    def generator(self):
 
         ## storing original inputs for use in model declaration later
         og_inputs = Input(shape = self.input_shape)
