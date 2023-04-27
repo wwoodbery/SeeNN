@@ -14,8 +14,10 @@ import time
 image_shape = preprocess.get_hr_shape()
 
 start = time.time()
-file = open('lr_hr_image_data.pkl','rb')
+file = open('lr_hr_image_data2.pkl','rb')
 data = pickle.load(file)
+
+print(data[0][1].shape)
 
 lr_images = []
 hr_images = []
@@ -30,6 +32,22 @@ for indice in indices:
 end = time.time()
 print(end-start)
 
+# check to see if there are any images in hr_images that do not have shape (358, 358, 3)
+# for i in range(len(hr_images)):
+#   if hr_images[i].shape != (358, 358, 3):
+#     print(i)
+
+print(hr_images[0].shape)
+print(lr_images[0].shape)
+
+
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    results = []
+    for i in range(0, len(lst), n):
+        results.append(lst[i:i + n])
+      
+    return list(results)
 
 def vgg_loss(y_true, y_pred):
     vgg19 = VGG19(include_top=False, weights='imagenet', input_shape=image_shape)
@@ -38,7 +56,7 @@ def vgg_loss(y_true, y_pred):
         l.trainable = False
     loss_model = Model(inputs=vgg19.input, outputs=vgg19.get_layer('block5_conv4').output)
     loss_model.trainable = False
-    mse = tf.reduced_mean(tf.squared_difference(loss_model(y_true), loss_model(y_pred)))
+    mse = tf.reduce_mean(tf.math.squared_difference(loss_model(y_true), loss_model(y_pred)))
     return mse
 
 def get_gan_network(discriminator, shape, generator, optimizer):
@@ -52,7 +70,7 @@ def get_gan_network(discriminator, shape, generator, optimizer):
                 optimizer=optimizer)
     return gan
 
-def train(epochs=1, batch_size=125):
+def train(epochs=1, batch_size=1):
     downscale_factor = 4
     #batch_count = None
     shape = (image_shape[0]//downscale_factor, image_shape[1]//downscale_factor, image_shape[2])
@@ -66,23 +84,26 @@ def train(epochs=1, batch_size=125):
 
     gan = get_gan_network(discriminator, shape, generator, adam)
 
-    lr_images_batches = tf.split(lr_images, int(len(lr_images)/batch_size))
-    hr_images_batches = tf.split(hr_images, int(len(lr_images)/batch_size))
+    lr_images_batches = chunks(lr_images, batch_size)
+    hr_images_batches = chunks(hr_images, batch_size)
 
     for e in range(1, epochs+1):
         print ('-'*15, 'Epoch %d' % e, '-'*15)
         for batch in range(batch_size):
-            
-            image_batch_hr = hr_images_batches[batch]
-            image_batch_lr = lr_images_batches[batch]
+            print("Batch #", batch)
+            image_batch_hr = tf.convert_to_tensor(hr_images_batches[batch])
+            image_batch_lr = tf.convert_to_tensor(lr_images_batches[batch])
+            print("generating sr images")
             generated_images_sr = generator.predict(image_batch_lr)
-
+            print("done generating sr images")
             real_data_Y = np.ones(batch_size)
             fake_data_Y = np.zeros(batch_size)
 
             discriminator.trainable = True
 
+            print("d_loss_real start")
             d_loss_real = discriminator.train_on_batch(image_batch_hr, real_data_Y)
+            print("d_loss_real end")
             d_loss_fake = discriminator.train_on_batch(generated_images_sr, fake_data_Y)
 
             gan_Y = np.ones(batch_size)
@@ -102,4 +123,4 @@ def train(epochs=1, batch_size=125):
             discriminator.save('./output/dis_model%d.h5' % e)
             gan.save('./output/gan_model%d.h5' % e)
 
-train(4, 125)
+train(4, 1)
