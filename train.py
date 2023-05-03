@@ -9,9 +9,12 @@ from discriminator import Discriminator
 import preprocess
 import pickle
 import time
+import os
+from skimage.transform import rescale, resize, downscale_local_mean
 
-
-image_shape = preprocess.get_hr_shape()
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+# image_shape = preprocess.get_hr_shape()
+image_shape = (128,128,3)
 
 start = time.time()
 file = open('lr_hr_image_data2.pkl','rb')
@@ -29,6 +32,15 @@ for indice in indices:
   lr_images.append(data[indice][0])
   hr_images.append(data[indice][1])
 
+
+hr_images2 = []
+for hr in hr_images:
+    hr_images2.append(resize(hr, (128,128,3), anti_aliasing=True))
+
+lr_images2 = []
+for lr in lr_images:
+    lr_images2.append(resize(lr, (32,32,3), anti_aliasing=True))
+
 end = time.time()
 print(end-start)
 
@@ -36,9 +48,11 @@ print(end-start)
 # for i in range(len(hr_images)):
 #   if hr_images[i].shape != (358, 358, 3):
 #     print(i)
+from tensorflow.python.client import device_lib
+print(device_lib.list_local_devices())
 
-print(hr_images[0].shape)
-print(lr_images[0].shape)
+print(hr_images2[0].shape)
+print(lr_images2[0].shape)
 
 
 def chunks(lst, n):
@@ -49,15 +63,28 @@ def chunks(lst, n):
       
     return list(results)
 
-def vgg_loss(y_true, y_pred):
-    vgg19 = VGG19(include_top=False, weights='imagenet', input_shape=image_shape)
-    vgg19.trainable = False
-    for l in vgg19.layers:
-        l.trainable = False
-    loss_model = Model(inputs=vgg19.input, outputs=vgg19.get_layer('block5_conv4').output)
-    loss_model.trainable = False
+vgg19 = VGG19(include_top=False, weights='imagenet', input_shape=image_shape)
+vgg19.trainable = False
+for l in vgg19.layers:
+    l.trainable = False
+loss_model = Model(inputs=vgg19.input, outputs=vgg19.get_layer('block5_conv4').output)
+loss_model.trainable = False
+
+def vgg_loss(y_true, y_pred, vgg_model=vgg19, loss_model=loss_model):
     mse = tf.reduce_mean(tf.math.squared_difference(loss_model(y_true), loss_model(y_pred)))
     return mse
+
+
+
+#def vgg_loss(y_true, y_pred):
+    # vgg19 = VGG19(include_top=False, weights='imagenet', input_shape=image_shape)
+    # vgg19.trainable = False
+    # for l in vgg19.layers:
+    #     l.trainable = False
+    # loss_model = Model(inputs=vgg19.input, outputs=vgg19.get_layer('block5_conv4').output)
+    # loss_model.trainable = False
+    # mse = tf.reduce_mean(tf.math.squared_difference(loss_model(y_true), loss_model(y_pred)))
+    # return mse
 
 def get_gan_network(discriminator, shape, generator, optimizer):
     discriminator.trainable = False
@@ -79,37 +106,35 @@ def train(epochs=1, batch_size=1):
     discriminator = Discriminator(image_shape).discriminator()
 
     adam = Adam(lr=1E-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
+    
     generator.compile(loss=vgg_loss, optimizer=adam)
     discriminator.compile(loss="binary_crossentropy", optimizer=adam)
 
+    #loss = vgg_loss(y_true, y_pred, vgg_model=vgg19)
+
     gan = get_gan_network(discriminator, shape, generator, adam)
 
-    lr_images_batches = chunks(lr_images, batch_size)
-    hr_images_batches = chunks(hr_images, batch_size)
+    lr_images_batches = chunks(lr_images2, batch_size)
+    hr_images_batches = chunks(hr_images2, batch_size)
 
     for e in range(1, epochs+1):
         print ('-'*15, 'Epoch %d' % e, '-'*15)
-        for batch in range(batch_size):
-            print("Batch #", batch)
+        for batch in range(int(len(lr_images)/batch_size)):
+            print("Batch #", batch, end='\r')
             image_batch_hr = tf.convert_to_tensor(hr_images_batches[batch])
             image_batch_lr = tf.convert_to_tensor(lr_images_batches[batch])
-            print("generating sr images")
             generated_images_sr = generator.predict(image_batch_lr)
-            print("done generating sr images")
             real_data_Y = np.ones(batch_size)
             fake_data_Y = np.zeros(batch_size)
 
             discriminator.trainable = True
 
-            print("d_loss_real start")
             d_loss_real = discriminator.train_on_batch(image_batch_hr, real_data_Y)
-            print("d_loss_real end")
             d_loss_fake = discriminator.train_on_batch(generated_images_sr, fake_data_Y)
 
             gan_Y = np.ones(batch_size)
 
             discriminator.trainable = False
-            
             loss_gan = gan.train_on_batch(image_batch_lr, [image_batch_hr, gan_Y])
 
         print("Loss HR , Loss LR, Loss GAN")
