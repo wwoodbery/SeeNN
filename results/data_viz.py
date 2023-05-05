@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def plot_all():
-    data = pd.read_csv('loss.txt', names=['Epochs', 'd_loss_fake', 'd_loss_real', 'loss_gan', 'loss_gan1', 'loss_gan2'])
+    data = pd.read_csv('results/loss.txt', names=['Epochs', 'd_loss_fake', 'd_loss_real', 'loss_gan', 'loss_gan1', 'loss_gan2'])
     epochs = data.loc[:, 'Epochs']
     plt.figure(figsize=(20,15))
     plt.plot(epochs, data.loc[:, 'd_loss_fake'], label='d_loss_fake')
@@ -14,10 +14,10 @@ def plot_all():
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
     plt.legend(fontsize=20)
-    plt.savefig('graphs/all.png')
+    plt.savefig('results/graphs/all.png')
 
 def plot_d_fake():
-    data = pd.read_csv('loss.txt', names=['Epochs', 'd_loss_fake', 'd_loss_real', 'loss_gan', 'loss_gan1', 'loss_gan2'])
+    data = pd.read_csv('results/loss.txt', names=['Epochs', 'd_loss_fake', 'd_loss_real', 'loss_gan', 'loss_gan1', 'loss_gan2'])
     epochs = data.loc[:, 'Epochs']
     plt.figure(figsize=(15,15))
     plt.plot(epochs, data.loc[:, 'd_loss_fake'], label='d_loss_fake')
@@ -25,10 +25,10 @@ def plot_d_fake():
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
     plt.legend(fontsize=20)
-    plt.savefig('graphs/d_loss_fake.png')
+    plt.savefig('results/graphs/d_loss_fake.png')
 
 def plot_d_real():
-    data = pd.read_csv('loss.txt', names=['Epochs', 'd_loss_fake', 'd_loss_real', 'loss_gan', 'loss_gan1', 'loss_gan2'])
+    data = pd.read_csv('results/loss.txt', names=['Epochs', 'd_loss_fake', 'd_loss_real', 'loss_gan', 'loss_gan1', 'loss_gan2'])
     epochs = data.loc[:, 'Epochs']
     plt.figure(figsize=(15,15))
     plt.plot(epochs, data.loc[:, 'd_loss_real'], label='d_loss_real')
@@ -36,10 +36,10 @@ def plot_d_real():
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
     plt.legend(fontsize=20)
-    plt.savefig('graphs/d_loss_real.png')
+    plt.savefig('results/graphs/d_loss_real.png')
 
 def plot_gen():
-    data = pd.read_csv('loss.txt', names=['Epochs', 'd_loss_fake', 'd_loss_real', 'loss_gan', 'loss_gan1', 'loss_gan2'])
+    data = pd.read_csv('results/loss.txt', names=['Epochs', 'd_loss_fake', 'd_loss_real', 'loss_gan', 'loss_gan1', 'loss_gan2'])
     epochs = data.loc[:, 'Epochs']
     plt.figure(figsize=(20,15))
     plt.plot(epochs, data.loc[:, 'loss_gan'], label='loss_gan')
@@ -49,7 +49,7 @@ def plot_gen():
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
     plt.legend(fontsize=20)
-    plt.savefig('graphs/generator.png')
+    plt.savefig('results/graphs/generator.png')
 
 if __name__ == '__main__':
     plot_all()
