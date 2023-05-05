@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def get_data():
-    data = pd.read_csv('results/loss.txt', names=['Epochs', 'd_loss_fake', 'd_loss_real', 'loss_gan', 'loss_gan1', 'loss_gan2'])
+    data = pd.read_csv('results/loss.txt', names=['Epochs', 'd_loss_fake', 'd_loss_real', 'Perceptual', 'Content', 'Adversarial'])
     for col in data:
         data[col] =data[col].astype(str).str.replace("[","").str.replace("]","")
     return data
@@ -14,17 +14,11 @@ def limit_decimals(x):
 def plot_all(data):
     epochs = data.loc[:, 'Epochs']
     plt.figure(figsize=(20,15))
-    # plt.plot(epochs, data.loc[:, 'd_loss_fake'].map(lambda x: limit_decimals(x)), label='d_loss_fake', linewidth=7)
-    # plt.plot(epochs, data.loc[:, 'd_loss_real'].map(lambda x: limit_decimals(x)), label='d_loss_real', linewidth=7)
-    # plt.plot(epochs, data.loc[:, 'loss_gan'].map(lambda x: limit_decimals(x)), label='loss_gan', linewidth=7)
-    # plt.plot(epochs, data.loc[:, 'loss_gan1'].map(lambda x: limit_decimals(x)), label='loss_gan1', linewidth=7)
-    # plt.plot(epochs, data.loc[:, 'loss_gan2'].map(lambda x: limit_decimals(x)), label='loss_gan2', linewidth=7)
-
     plt.plot(epochs, np.asarray(data.loc[:, 'd_loss_fake'], float), label='d_loss_fake', linewidth=7)
     plt.plot(epochs, np.asarray(data.loc[:, 'd_loss_real'], float), label='d_loss_real', linewidth=7)
-    plt.plot(epochs, np.asarray(data.loc[:, 'loss_gan'], float), label='loss_gan', linewidth=7)
-    plt.plot(epochs, np.asarray(data.loc[:, 'loss_gan1'], float), label='loss_gan1', linewidth=7)
-    plt.plot(epochs, np.asarray(data.loc[:, 'loss_gan2'], float), label='loss_gan2', linewidth=7)
+    plt.plot(epochs, np.asarray(data.loc[:, 'Perceptual'], float), label='Perceptual', linewidth=7)
+    plt.plot(epochs, np.asarray(data.loc[:, 'Content'], float), label='Content', linewidth=7)
+    plt.plot(epochs, np.asarray(data.loc[:, 'Adversarial'], float), label='Adversarial', linewidth=7)
     plt.title('Training and Loss', size=40)
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
@@ -57,29 +51,25 @@ def plot_d_real(data):
     plt.legend(fontsize=20)
     plt.savefig('results/graphs/d_loss_real.png')
 
-def plot_gen(data):
+def plot_gan(data):
     epochs = data.loc[:, 'Epochs']
     plt.figure(figsize=(20,15))
-    # plt.plot(epochs, data.loc[:, 'loss_gan'], label='loss_gan')
-    # plt.plot(epochs, data.loc[:, 'loss_gan1'], label='loss_gan1')
-    # plt.plot(epochs, data.loc[:, 'loss_gan2'], label='loss_gan2')
-    # plt.plot(epochs, data.loc[:, 'loss_gan'].map(lambda x: limit_decimals(x)), label='loss_gan',linewidth=7)
-    # plt.plot(epochs, data.loc[:, 'loss_gan1'].map(lambda x: limit_decimals(x)), label='loss_gan1',linewidth=7)
-    # plt.plot(epochs, data.loc[:, 'loss_gan2'].map(lambda x: limit_decimals(x)), label='loss_gan2',linewidth=7)
-    plt.plot(epochs, np.asarray(data.loc[:, 'loss_gan'], float), label='loss_gan',linewidth=7)
-    plt.plot(epochs, np.asarray(data.loc[:, 'loss_gan1'], float), label='loss_gan1',linewidth=7)
-    plt.plot(epochs, np.asarray(data.loc[:, 'loss_gan2'], float), label='loss_gan2',linewidth=7)
-    plt.title('Generator Loss', size=40)
+    BCE = np.asarray(data.loc[:, 'Adversarial'], float)
+    BCE = BCE * 10e-3
+    plt.plot(epochs, np.asarray(data.loc[:, 'Perceptual'], float), label='Perceptual',linewidth=7)
+    plt.plot(epochs, np.asarray(data.loc[:, 'Content'], float), label='Content',linewidth=7)
+    plt.plot(epochs, BCE, label='Adversarial',linewidth=7)
+    plt.title('GAN Loss', size=40)
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
     plt.xticks(fontsize=15)
     plt.yticks(fontsize=15)
     plt.legend(fontsize=20)
-    plt.savefig('results/graphs/generator.png')
+    plt.savefig('results/graphs/gan.png')
 
 if __name__ == '__main__':
     data = get_data()
     plot_all(data)
     plot_d_fake(data)
     plot_d_real(data)
-    plot_gen(data)
+    plot_gan(data)
