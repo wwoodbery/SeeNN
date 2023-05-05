@@ -3,25 +3,26 @@ import matplotlib.pyplot as plt
 
 def get_data():
     data = pd.read_csv('results/loss.txt', names=['Epochs', 'd_loss_fake', 'd_loss_real', 'loss_gan', 'loss_gan1', 'loss_gan2'])
-    df = data
-    for col in df:
-        df[col] =df[col].astype(str).str.replace("[","").str.replace("]","")
+    for col in data:
+        data[col] =data[col].astype(str).str.replace("[","").str.replace("]","")
     return data
+
+def limit_decimals(x):
+        return "{:.10f}".format(float(x))
 
 def plot_all(data):
     epochs = data.loc[:, 'Epochs']
     plt.figure(figsize=(20,15))
-    plt.plot(epochs, data.loc[:, 'd_loss_fake'], label='d_loss_fake')
-    plt.plot(epochs, data.loc[:, 'd_loss_real'], label='d_loss_real')
-    plt.plot(epochs, data.loc[:, 'loss_gan'], label='loss_gan')
-    plt.plot(epochs, data.loc[:, 'loss_gan1'], label='loss_gan1')
-    plt.plot(epochs, data.loc[:, 'loss_gan2'], label='loss_gan2')
+    plt.plot(epochs, data.loc[:, 'd_loss_fake'].map(lambda x: limit_decimals(x)), label='d_loss_fake')
+    plt.plot(epochs, data.loc[:, 'd_loss_real'].map(lambda x: limit_decimals(x)), label='d_loss_real')
+    plt.plot(epochs, data.loc[:, 'loss_gan'].map(lambda x: limit_decimals(x)), label='loss_gan')
+    plt.plot(epochs, data.loc[:, 'loss_gan1'].map(lambda x: limit_decimals(x)), label='loss_gan1')
+    plt.plot(epochs, data.loc[:, 'loss_gan2'].map(lambda x: limit_decimals(x)), label='loss_gan2')
     plt.title('Training and Loss', size=40)
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
     plt.legend(fontsize=20)
     plt.savefig('results/graphs/all.png')
-    print(data)
 
 def plot_d_fake(data):
     epochs = data.loc[:, 'Epochs']
@@ -46,9 +47,12 @@ def plot_d_real(data):
 def plot_gen(data):
     epochs = data.loc[:, 'Epochs']
     plt.figure(figsize=(20,15))
-    plt.plot(epochs, data.loc[:, 'loss_gan'], label='loss_gan')
-    plt.plot(epochs, data.loc[:, 'loss_gan1'], label='loss_gan1')
-    plt.plot(epochs, data.loc[:, 'loss_gan2'], label='loss_gan2')
+    # plt.plot(epochs, data.loc[:, 'loss_gan'], label='loss_gan')
+    # plt.plot(epochs, data.loc[:, 'loss_gan1'], label='loss_gan1')
+    # plt.plot(epochs, data.loc[:, 'loss_gan2'], label='loss_gan2')
+    plt.plot(epochs, data.loc[:, 'loss_gan'].map(lambda x: limit_decimals(x)), label='loss_gan')
+    plt.plot(epochs, data.loc[:, 'loss_gan1'].map(lambda x: limit_decimals(x)), label='loss_gan1')
+    plt.plot(epochs, data.loc[:, 'loss_gan2'].map(lambda x: limit_decimals(x)), label='loss_gan2')
     plt.title('Generator Loss', size=40)
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
