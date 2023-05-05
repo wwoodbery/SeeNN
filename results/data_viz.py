@@ -28,6 +28,8 @@ def plot_all(data):
     plt.title('Training and Loss', size=40)
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
     plt.legend(fontsize=20)
     plt.savefig('results/graphs/all.png')
 
@@ -38,6 +40,8 @@ def plot_d_fake(data):
     plt.title('Discriminator Loss on Fake Images', size=40)
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
     plt.legend(fontsize=20)
     plt.savefig('results/graphs/d_loss_fake.png')
 
@@ -48,6 +52,8 @@ def plot_d_real(data):
     plt.title('Discriminator Loss on Real Images', size=40)
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
     plt.legend(fontsize=20)
     plt.savefig('results/graphs/d_loss_real.png')
 
@@ -66,6 +72,8 @@ def plot_gen(data):
     plt.title('Generator Loss', size=40)
     plt.xlabel('Epochs', size=30)
     plt.ylabel('Loss', size=30)
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
     plt.legend(fontsize=20)
     plt.savefig('results/graphs/generator.png')
 
